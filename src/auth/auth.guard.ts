@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   CanActivate,
   ExecutionContext,
@@ -55,8 +54,15 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+  private extractTokenFromHeader(req: Request): string | undefined {
+    return (
+      (req.headers['x-access-token'] as string) ||
+      (req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer')
+        ? req.headers.authorization.split(' ')[1]
+        : undefined)
+    );
+    // const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    // return type === 'Bearer' ? token : undefined;
   }
 }
