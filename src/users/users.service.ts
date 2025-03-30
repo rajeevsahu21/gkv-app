@@ -23,14 +23,14 @@ export class UsersService {
     resetPasswordToken?: string;
     resetPasswordExpires?: object;
   }) {
-    return this.userModel.findOne(filter);
+    return this.userModel.findOne(filter).lean();
   }
 
   async findOneOrThrow(
     filter: { _id?: string; email?: string },
     message = 'User not found',
   ) {
-    const user = await this.userModel.findOne(filter);
+    const user = await this.userModel.findOne(filter).lean();
     if (!user) {
       throw new NotFoundException(message);
     }
@@ -67,7 +67,7 @@ export class UsersService {
     return this.userModel.findOneAndUpdate(filter, update);
   }
 
-  remove(id: string) {
+  remove(id: string): Promise<any> {
     return this.userModel.deleteOne({ _id: id });
   }
 }

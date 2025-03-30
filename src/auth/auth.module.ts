@@ -9,6 +9,7 @@ import { UsersModule } from '../users/users.module';
 import { CoursesModule } from '../courses/courses.module';
 import { AuthGuard } from './auth.guard';
 import { RolesGuard } from './roles.guard';
+import { EmailModule } from '../common/email/email.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { RolesGuard } from './roles.guard';
     }),
     UsersModule,
     CoursesModule,
+    EmailModule,
   ],
   controllers: [AuthController],
   providers: [

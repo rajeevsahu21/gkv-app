@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BullModule } from '@nestjs/bullmq';
 import { BullBoardModule } from '@bull-board/nestjs';
@@ -18,9 +18,10 @@ import { CoursesModule } from '../courses/courses.module';
       name: 'class',
       adapter: BullMQAdapter,
     }),
-    CoursesModule,
+    forwardRef(() => CoursesModule),
   ],
   controllers: [ClassesController],
   providers: [ClassesService, ClassesProcessor],
+  exports: [ClassesService],
 })
 export class ClassesModule {}

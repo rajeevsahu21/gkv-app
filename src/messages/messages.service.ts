@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { DeleteResult, Model } from 'mongoose';
 
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
@@ -12,24 +12,36 @@ export class MessagesService {
     @InjectModel(Message.name) private messageModel: Model<Message>,
   ) {}
 
-  async create(createMessageDto: CreateMessageDto) {
-    await this.messageModel.create(createMessageDto);
-    return { message: 'Message Send successfully' };
+  create(createMessageDto: CreateMessageDto) {
+    return this.messageModel.create(createMessageDto);
   }
 
-  findAll() {
-    return `This action returns all messages`;
+  find(filter: { courseId: string }) {
+    return this.messageModel.find(filter);
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} message`;
+  findOne(filter: { _id: string }) {
+    return this.messageModel.findOne(filter);
   }
 
-  update(id: string, updateMessageDto: UpdateMessageDto) {
-    return `This action updates a #${id} message`;
+  async update(id: string, update: UpdateMessageDto) {
+    const message = await this.messageModel.findOneAndUpdate(
+      { _id: id },
+      update,
+    );
+    if (!message) {
+      throw new NotFoundException('Message Not Found');
+    }
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} message`;
+  async remove(id: string) {
+    const message = await this.messageModel.findOneAndDelete({ _id: id });
+    if (!message) {
+      throw new NotFoundException('Message Not Found');
+    }
+  }
+
+  deleteMany(filter: { courseId: string }): Promise<DeleteResult> {
+    return this.messageModel.deleteMany(filter);
   }
 }

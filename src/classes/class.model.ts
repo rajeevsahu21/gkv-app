@@ -17,7 +17,7 @@ export class Class {
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Course' })
   courseId: mongoose.Types.ObjectId;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId })
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] })
   students: mongoose.Types.ObjectId[];
 
   @Prop({ type: Location, required: true })

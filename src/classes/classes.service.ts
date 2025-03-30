@@ -1,22 +1,25 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { InjectQueue } from '@nestjs/bullmq';
-import { Model } from 'mongoose';
+import { DeleteResult, Model } from 'mongoose';
 import { Queue } from 'bullmq';
 
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
-import { Class } from './class.model';
 import { CoursesService } from '../courses/courses.service';
+import { Class } from './class.model';
 
 @Injectable()
 export class ClassesService {
   constructor(
     @InjectModel(Class.name) private classModel: Model<Class>,
+    @Inject(forwardRef(() => CoursesService))
     private readonly coursesService: CoursesService,
     @InjectQueue('class') private classQueue: Queue,
   ) {}
@@ -40,24 +43,45 @@ export class ClassesService {
         { delay: 300000, deduplication: { id: courseId } },
       ),
     ]);
-    return { message: 'Class Started successfully' };
   }
 
-  async findAll() {
-    const data = await this.classModel
-      .find()
-      .sort({ createdAt: -1 })
-      .select('-__v')
-      .lean();
-    return { message: `Available classes found: ${data.length}`, data };
+  find(filter: { courseId: string; students?: string }) {
+    return this.classModel.find(filter);
   }
 
-  findOne(id: string) {
-    return this.classModel.findOne({ _id: id });
+  findOne(filter: { _id?: string; courseId?: string }) {
+    return this.classModel.findOne(filter);
   }
 
-  update(id: string, updateClassDto: UpdateClassDto) {
-    return this.classModel.updateOne({ _id: id }, updateClassDto);
+  async getClassWithStudents(classId: string) {
+    const cls = await this.classModel.findOne({ _id: classId });
+    if (!cls) {
+      throw new NotFoundException('Class not found');
+    }
+    const course = await this.coursesService
+      .findOne({ _id: cls.courseId.toString() })
+      .populate('students', 'registrationNo name');
+
+    const courseStudent = course?.students;
+    const classStudent = cls.students;
+    const data: any[] = [];
+    courseStudent?.forEach((student: any) => {
+      student.present = classStudent.includes(student._id);
+      data.push(student);
+    });
+    return { message: 'Student Attendance found', data };
+  }
+
+  async update(id: string, { students }: UpdateClassDto) {
+    const mark: string[] = [],
+      unMark: string[] = [];
+    students.forEach((student) => {
+      (Boolean(student.present) ? mark : unMark).push(student._id);
+    });
+    await Promise.all([
+      this.classModel.updateOne({ _id: id }, { $addToSet: { students: mark } }),
+      this.classModel.updateOne({ _id: id }, { $pull: { students: unMark } }),
+    ]);
   }
 
   updateOne(
@@ -67,8 +91,8 @@ export class ClassesService {
     return this.classModel.updateOne(filter, update);
   }
 
-  async remove(id: string) {
-    const deletedClass = await this.classModel.findOneAndDelete({ _id: id });
+  async findOneAndDelete(filter: { _id: string }) {
+    const deletedClass = await this.classModel.findOneAndDelete(filter);
 
     if (!deletedClass) {
       throw new NotFoundException('Class not found');
@@ -80,7 +104,9 @@ export class ClassesService {
         { activeClass: false },
       );
     }
+  }
 
-    return { message: 'Class deleted successfully' };
+  deleteMany(filter: { courseId: string }): Promise<DeleteResult> {
+    return this.classModel.deleteMany(filter);
   }
 }

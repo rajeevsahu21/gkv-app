@@ -8,7 +8,7 @@ import { compareSync, hashSync, genSaltSync } from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { OAuth2Client } from 'google-auth-library';
-import Handlebars from 'handlebars';
+import { compile } from 'handlebars';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -16,9 +16,9 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UsersService } from '../users/users.service';
 import { CoursesService } from '../courses/courses.service';
-import sendEmail from '../common/utils/sendEmail';
 import { EmailDto } from './dto/email.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
+import { EmailService } from '../common/email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -28,6 +28,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
     private readonly coursesService: CoursesService,
+    private readonly emailService: EmailService,
   ) {
     this.client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   }
@@ -53,10 +54,12 @@ export class AuthService {
     if (!verifiedPassword) {
       throw new UnauthorizedException('Invalid email or password');
     }
-    const course = await this.coursesService.findOne({
-      students: user._id.toString(),
-      activeClass: true,
-    });
+    const course = await this.coursesService
+      .findOne({
+        students: user._id.toString(),
+        activeClass: true,
+      })
+      .select('_id');
     if (course) {
       throw new BadRequestException('Login denied because active class found');
     }
@@ -92,26 +95,16 @@ export class AuthService {
       password: hashPassword,
       confirmationCode,
     });
-    const templatePath = join(
-      process.cwd(),
-      'public',
-      'templates',
-      'confirm-account.html',
-    );
-    const source = readFileSync(templatePath, 'utf8');
-    const template = Handlebars.compile(source);
-    const html = template({
-      OTP: confirmationCode,
-      NAME: registerDto.name,
-      URL: process.env.URL,
-    });
-    const mailOptions = {
-      from: `"no-reply" ${process.env.SMTP_USER_NAME}`,
-      to: registerDto.email,
+    await this.emailService.addJob({
       subject: 'Please confirm your account',
-      html,
-    };
-    await sendEmail(mailOptions);
+      to: registerDto.email,
+      body: {
+        OTP: confirmationCode,
+        NAME: registerDto.name,
+        URL: process.env.URL,
+      },
+      templateName: 'confirm-account',
+    });
     return {
       message: 'User was registered successfully! Please check your email',
     };
@@ -200,12 +193,11 @@ export class AuthService {
         'error.html',
       );
       const source = readFileSync(templatePath, 'utf8');
-      const template = Handlebars.compile(source);
-      const html = template({
+      const template = compile(source);
+      return template({
         TITLE: 'User Not Found.',
         MESSAGE: 'Please register again or Continue with Google.',
       });
-      return html;
     }
     const templatePath = join(
       process.cwd(),
@@ -214,12 +206,11 @@ export class AuthService {
       'success.html',
     );
     const source = readFileSync(templatePath, 'utf8');
-    const template = Handlebars.compile(source);
-    const html = template({
+    const template = compile(source);
+    return template({
       TITLE: 'Your Account has been Verified!',
       MESSAGE: 'Now, You are able to Login.',
     });
-    return html;
   }
 
   async recover(emailDto: EmailDto) {
@@ -234,26 +225,17 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('No User found with given email');
     }
-    const templatePath = join(
-      process.cwd(),
-      'public',
-      'templates',
-      'forgot-password.html',
-    );
-    const source = readFileSync(templatePath, 'utf8');
-    const template = Handlebars.compile(source);
-    const html = template({
-      OTP: resetPasswordToken,
-      NAME: user.name,
-      URL: process.env.URL,
-    });
-    const mailOptions = {
-      from: `"no-reply" ${process.env.SMTP_USER_NAME}`,
-      to: user.email,
+
+    await this.emailService.addJob({
       subject: 'Password change request',
-      html,
-    };
-    await sendEmail(mailOptions);
+      to: user.email,
+      body: {
+        OTP: resetPasswordToken,
+        NAME: user.name,
+        URL: process.env.URL,
+      },
+      templateName: 'forgot-password',
+    });
     return { message: 'A reset email has been sent' };
   }
 
@@ -271,11 +253,10 @@ export class AuthService {
       );
       const source = readFileSync(templatePath, 'utf8');
       const template = Handlebars.compile(source);
-      const html = template({
+      return template({
         TITLE: 'Password reset token is invalid or has expired.',
         MESSAGE: 'Please reset your password once again.',
       });
-      return html;
     }
     return readFileSync(
       join(process.cwd(), 'public', 'templates', 'reset-password.html'),
@@ -307,39 +288,34 @@ export class AuthService {
       );
       const source = readFileSync(templatePath, 'utf8');
       const template = Handlebars.compile(source);
-      const html = template({
+      return template({
         TITLE: 'Password reset token is invalid or has expired.',
         MESSAGE: 'Please reset your password once again.',
       });
-      return html;
     }
-    let templatePath = join(
+
+    await this.emailService.addJob({
+      subject: 'Your password has been changed',
+      to: user.email,
+      body: {
+        NAME: user.name,
+        EMAIL: user.email,
+      },
+      templateName: 'password-change-confirmation',
+    });
+
+    const templatePath = join(
       process.cwd(),
       'public',
       'templates',
-      'password-change-confirmation.html',
+      'success.html',
     );
-    let source = readFileSync(templatePath, 'utf8');
-    let template = Handlebars.compile(source);
-    let html = template({
-      NAME: user.name,
-      EMAIL: user.email,
-    });
-    const mailOptions = {
-      from: `"no-reply" ${process.env.SMTP_USER_NAME}`,
-      to: user.email,
-      subject: 'Your password has been changed',
-      html,
-    };
-    await sendEmail(mailOptions);
-    templatePath = join(process.cwd(), 'public', 'templates', 'success.html');
-    source = readFileSync(templatePath, 'utf8');
-    template = Handlebars.compile(source);
-    html = template({
+    const source = readFileSync(templatePath, 'utf8');
+    const template = Handlebars.compile(source);
+    return template({
       TITLE: 'Your Password has been Updated!',
       MESSAGE: 'Now, You are able to Login.',
     });
-    return html;
   }
 
   async verifyGoogleToken(token: string) {

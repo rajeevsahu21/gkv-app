@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { CoursesModule } from './courses/courses.module';
 import { ClassesModule } from './classes/classes.module';
 import { MessagesModule } from './messages/messages.module';
+import { EmailModule } from './common/email/email.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { MessagesModule } from './messages/messages.module';
     CoursesModule,
     ClassesModule,
     MessagesModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [

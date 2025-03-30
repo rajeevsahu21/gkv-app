@@ -3,10 +3,11 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
+  Put,
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -14,6 +15,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './user.model';
 import { IdDto } from '../common/dto/id.dto';
 
+@ApiBearerAuth()
 @Controller('user')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -33,7 +35,7 @@ export class UsersController {
     return this.usersService.findOneOrThrow({ _id: idDto.id });
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param() idDto: IdDto, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(idDto.id, updateUserDto);
   }

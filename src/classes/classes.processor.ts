@@ -4,7 +4,7 @@ import { Job } from 'bullmq';
 import { ClassesService } from './classes.service';
 import { CoursesService } from '../courses/courses.service';
 
-@Processor('class', { concurrency: 50 })
+@Processor('class', { concurrency: 10 })
 export class ClassesProcessor extends WorkerHost {
   constructor(
     private classesService: ClassesService,
