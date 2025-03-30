@@ -14,8 +14,8 @@ export class UsersService {
     return this.userModel.create(createUserDto);
   }
 
-  findAll() {
-    return this.userModel.find();
+  find(filter: object, projection: Object) {
+    return this.userModel.find(filter, projection).lean();
   }
 
   findOne(filter: {
@@ -37,13 +37,19 @@ export class UsersService {
     return user;
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user ${updateUserDto.email}`;
+  countDocuments(filter: object) {
+    return this.userModel.countDocuments(filter);
   }
 
   updateOne(
     filter: { _id?: string; email?: string },
-    update: { name: string; gId: string; profileImage: string; status: string },
+    update: {
+      name?: string;
+      gId?: string;
+      profileImage?: string;
+      status?: string;
+      token?: string;
+    },
   ) {
     return this.userModel.updateOne(filter, update);
   }
@@ -57,6 +63,9 @@ export class UsersService {
       resetPasswordToken?: string;
     },
     update: {
+      name?: string;
+      email?: string;
+      role?: string;
       status?: string;
       password?: string;
       resetPasswordToken?: string;
@@ -65,9 +74,5 @@ export class UsersService {
     },
   ) {
     return this.userModel.findOneAndUpdate(filter, update);
-  }
-
-  remove(id: string): Promise<any> {
-    return this.userModel.deleteOne({ _id: id });
   }
 }
