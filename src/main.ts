@@ -6,6 +6,8 @@ import helmet from 'helmet';
 import './common/utils/instrument';
 import { AppModule } from './app.module';
 
+const port = process.env.PORT || 8080;
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
@@ -32,6 +34,6 @@ async function bootstrap() {
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, documentFactory);
-  await app.listen(process.env.PORT ?? 8080);
+  await app.listen(port);
 }
 void bootstrap();
