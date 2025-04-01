@@ -20,6 +20,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/user.model';
 import { CourseDto } from '../courses/dto/course.dto';
 import { IRequest } from '../common/interfaces/request';
+import { MarkAttendanceDto } from './dto/markAttendance.dto';
 import { ClassDto } from './dto/class.dto';
 
 @ApiBearerAuth()
@@ -46,6 +47,12 @@ export class ClassesController {
   }
 
   @Roles(Role.Teacher)
+  @Get('students')
+  async getClassWithStudents(@Query() { classId }: ClassDto) {
+    return this.classesService.getClassWithStudents(classId);
+  }
+
+  @Roles(Role.Teacher)
   @Get(':id')
   async findOne(@Param() idDto: IdDto) {
     const cls = this.classesService.findOne({ _id: idDto.id });
@@ -59,10 +66,12 @@ export class ClassesController {
     };
   }
 
-  @Roles(Role.Teacher)
-  @Get('students')
-  async getClassWithStudents(@Query() { classId }: ClassDto) {
-    return this.classesService.getClassWithStudents(classId);
+  @Put()
+  updateClass(
+    @Body() markAttendanceDto: MarkAttendanceDto,
+    @Req() req: IRequest,
+  ) {
+    return this.classesService.updateClass(markAttendanceDto, req.user);
   }
 
   @Roles(Role.Teacher)

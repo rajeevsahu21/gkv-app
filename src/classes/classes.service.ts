@@ -7,11 +7,12 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { InjectQueue } from '@nestjs/bullmq';
-import { DeleteResult, Model } from 'mongoose';
+import { DeleteResult, Model, Types } from 'mongoose';
 import { Queue } from 'bullmq';
 
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
+import { MarkAttendanceDto } from './dto/markAttendance.dto';
 import { CoursesService } from '../courses/courses.service';
 import { Class } from './class.model';
 
@@ -84,6 +85,57 @@ export class ClassesService {
     ]);
   }
 
+  async updateClass(
+    { courseId, location }: MarkAttendanceDto,
+    user: { _id: string; role: string },
+  ) {
+    if (user.role === 'teacher') {
+      const oldClass = await this.classModel.findOneAndUpdate(
+        { courseId, active: true },
+        { active: false },
+      );
+      if (oldClass) {
+        throw new NotFoundException('No running Class found');
+      }
+      await this.coursesService.updateOne(
+        { _id: courseId },
+        { activeClass: false },
+      );
+      return { message: 'Class dismissed successfully' };
+    }
+    if (!location) {
+      throw new BadRequestException('Required field is missing');
+    }
+    const studentId = user._id;
+    const runningClass = await this.classModel.findOne({
+      courseId,
+      active: true,
+    });
+    if (!runningClass) {
+      throw new NotFoundException('No running class found');
+    }
+    const classId = runningClass._id;
+    if (runningClass.students.includes(new Types.ObjectId(studentId))) {
+      throw new BadRequestException('Student already marked Attendance');
+    }
+    const distance = this.calculateDistance(
+      runningClass.location.latitude,
+      location.latitude,
+      runningClass.location.longitude,
+      location.longitude,
+    );
+    if (distance > runningClass.radius) {
+      throw new BadRequestException('You are too far from class');
+    }
+    await this.classModel.updateOne(
+      { _id: classId },
+      {
+        $addToSet: { students: studentId },
+      },
+    );
+    return { message: 'Class Attendance marked successfully' };
+  }
+
   updateOne(
     filter: { courseId: string; active: boolean },
     update: { active: boolean },
@@ -108,5 +160,34 @@ export class ClassesService {
 
   deleteMany(filter: { courseId: string }): Promise<DeleteResult> {
     return this.classModel.deleteMany(filter);
+  }
+
+  private calculateDistance(
+    lat1: number,
+    lat2: number,
+    lon1: number,
+    lon2: number,
+  ) {
+    // degrees to radians.
+    lon1 = (lon1 * Math.PI) / 180;
+    lon2 = (lon2 * Math.PI) / 180;
+    lat1 = (lat1 * Math.PI) / 180;
+    lat2 = (lat2 * Math.PI) / 180;
+
+    // Haversine formula
+    let dlon = lon2 - lon1;
+    let dlat = lat2 - lat1;
+    let a =
+      Math.pow(Math.sin(dlat / 2), 2) +
+      Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dlon / 2), 2);
+
+    let c = 2 * Math.asin(Math.sqrt(a));
+
+    // Radius of earth in kilometers. Use 3956
+    // for miles
+    let r = 6371;
+
+    // calculate the result in meter
+    return c * r * 1000;
   }
 }

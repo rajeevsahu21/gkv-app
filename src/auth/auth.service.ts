@@ -252,7 +252,7 @@ export class AuthService {
         'error.html',
       );
       const source = readFileSync(templatePath, 'utf8');
-      const template = Handlebars.compile(source);
+      const template = compile(source);
       return template({
         TITLE: 'Password reset token is invalid or has expired.',
         MESSAGE: 'Please reset your password once again.',
@@ -274,8 +274,8 @@ export class AuthService {
       },
       {
         password: hashPassword,
-        resetPasswordToken: undefined,
-        resetPasswordExpires: undefined,
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
         status: 'active',
       },
     );
@@ -287,7 +287,7 @@ export class AuthService {
         'error.html',
       );
       const source = readFileSync(templatePath, 'utf8');
-      const template = Handlebars.compile(source);
+      const template = compile(source);
       return template({
         TITLE: 'Password reset token is invalid or has expired.',
         MESSAGE: 'Please reset your password once again.',
@@ -311,7 +311,7 @@ export class AuthService {
       'success.html',
     );
     const source = readFileSync(templatePath, 'utf8');
-    const template = Handlebars.compile(source);
+    const template = compile(source);
     return template({
       TITLE: 'Your Password has been Updated!',
       MESSAGE: 'Now, You are able to Login.',

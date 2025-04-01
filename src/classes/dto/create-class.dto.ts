@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-class LocationDto {
+export class LocationDto {
   @IsNumber()
   @IsNotEmpty()
   longitude: number;

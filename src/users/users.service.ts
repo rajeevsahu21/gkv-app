@@ -68,8 +68,8 @@ export class UsersService {
       role?: string;
       status?: string;
       password?: string;
-      resetPasswordToken?: string;
-      resetPasswordExpires?: number;
+      resetPasswordToken?: string | null;
+      resetPasswordExpires?: number | null;
       lastActivityAt?: Date;
     },
   ) {
