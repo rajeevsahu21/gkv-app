@@ -21,7 +21,7 @@ class Student {
 export class UpdateClassDto extends PartialType(CreateClassDto) {
   @IsOptional()
   @IsBoolean()
-  active: boolean;
+  active?: boolean;
 
   @IsArray()
   @ValidateNested()

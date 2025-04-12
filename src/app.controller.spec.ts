@@ -16,7 +16,10 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+      expect(appController.getHello()).toStrictEqual({
+        message: 'API is working',
+        version: '1.0.0',
+      });
     });
   });
 });

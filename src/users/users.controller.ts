@@ -19,7 +19,9 @@ export class UsersController {
     private readonly coursesService: CoursesService,
   ) {
     const packageJsonPath = join(__dirname, '..', '..', 'package.json');
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+    const packageJson: { version: string } = JSON.parse(
+      readFileSync(packageJsonPath, 'utf8'),
+    );
     this.version = packageJson.version;
   }
 
@@ -89,7 +91,7 @@ export class UsersController {
     @Body() body: { userId: string; name: string; email: string; role: string },
   ) {
     const { userId, name, email, role } = body;
-    const user = await this.usersService.findOneAndUpdate(
+    await this.usersService.findOneAndUpdate(
       { _id: userId },
       { name, email, role },
     );

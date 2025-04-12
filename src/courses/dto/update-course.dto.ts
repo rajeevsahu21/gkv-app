@@ -7,9 +7,9 @@ export class UpdateCourseDto extends PartialType(CreateCourseDto) {
   @IsOptional()
   @IsArray()
   @IsMongoId({ each: true })
-  students: string[];
+  students?: string[];
 
   @IsOptional()
   @IsBoolean()
-  toggle: boolean;
+  toggle?: boolean;
 }

@@ -77,7 +77,7 @@ export class ClassesService {
     const mark: string[] = [],
       unMark: string[] = [];
     students.forEach((student) => {
-      (Boolean(student.present) ? mark : unMark).push(student._id);
+      (student.present ? mark : unMark).push(student._id);
     });
     await Promise.all([
       this.classModel.updateOne({ _id: id }, { $addToSet: { students: mark } }),
@@ -94,7 +94,7 @@ export class ClassesService {
         { courseId, active: true },
         { active: false },
       );
-      if (oldClass) {
+      if (!oldClass) {
         throw new NotFoundException('No running Class found');
       }
       await this.coursesService.updateOne(
@@ -115,7 +115,7 @@ export class ClassesService {
       throw new NotFoundException('No running class found');
     }
     const classId = runningClass._id;
-    if (runningClass.students.includes(new Types.ObjectId(studentId))) {
+    if (runningClass.students.some((id) => id.toString() === studentId)) {
       throw new BadRequestException('Student already marked Attendance');
     }
     const distance = this.calculateDistance(
@@ -175,17 +175,17 @@ export class ClassesService {
     lat2 = (lat2 * Math.PI) / 180;
 
     // Haversine formula
-    let dlon = lon2 - lon1;
-    let dlat = lat2 - lat1;
-    let a =
+    const dlon = lon2 - lon1;
+    const dlat = lat2 - lat1;
+    const a =
       Math.pow(Math.sin(dlat / 2), 2) +
       Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dlon / 2), 2);
 
-    let c = 2 * Math.asin(Math.sqrt(a));
+    const c = 2 * Math.asin(Math.sqrt(a));
 
     // Radius of earth in kilometers. Use 3956
     // for miles
-    let r = 6371;
+    const r = 6371;
 
     // calculate the result in meter
     return c * r * 1000;

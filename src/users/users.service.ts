@@ -14,7 +14,7 @@ export class UsersService {
     return this.userModel.create(createUserDto);
   }
 
-  find(filter: object, projection: Object) {
+  find(filter: object, projection: object) {
     return this.userModel.find(filter, projection).lean();
   }
 

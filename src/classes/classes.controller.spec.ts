@@ -1,77 +1,108 @@
-import { Test } from '@nestjs/testing';
-import { Types } from 'mongoose';
-
+import { Test, TestingModule } from '@nestjs/testing';
 import { ClassesController } from './classes.controller';
 import { ClassesService } from './classes.service';
+import { NotFoundException } from '@nestjs/common';
+
+const mockClassesService = {
+  create: jest.fn(),
+  find: jest.fn(),
+  getClassWithStudents: jest.fn(),
+  findOne: jest.fn(),
+  updateClass: jest.fn(),
+  update: jest.fn(),
+  findOneAndDelete: jest.fn(),
+};
 
 describe('ClassesController', () => {
   let controller: ClassesController;
-  let service: ClassesService;
+  let service: typeof mockClassesService;
 
   beforeEach(async () => {
-    const module = await Test.createTestingModule({
+    const module: TestingModule = await Test.createTestingModule({
       controllers: [ClassesController],
       providers: [
         {
           provide: ClassesService,
-          useValue: {
-            create: jest.fn(),
-            findAll: jest.fn(),
-          },
+          useValue: mockClassesService,
         },
       ],
     }).compile();
 
-    controller = module.get(ClassesController);
+    controller = module.get<ClassesController>(ClassesController);
     service = module.get(ClassesService);
+    jest.clearAllMocks();
   });
 
-  describe('create', () => {
-    it('should create a class', async () => {
-      const dto = {
-        courseId: new Types.ObjectId().toString(),
-        location: { latitude: 12.34, longitude: 56.78 },
-        radius: 50,
-      };
-      jest.spyOn(service, 'create').mockImplementationOnce(() =>
-        Promise.resolve({
-          message: 'Class Started successfully',
-        }),
-      );
-      expect(await controller.create(dto)).toEqual({
-        message: 'Class Started successfully',
-      });
-    });
+  it('should create a class', async () => {
+    await controller.create({} as any);
+    expect(service.create).toHaveBeenCalled();
   });
 
-  describe('findAll', () => {
-    it('should return all classes', async () => {
-      const oneClass = {
-        _id: new Types.ObjectId(),
-        courseId: new Types.ObjectId(),
-        students: [],
-        location: {
-          longitude: 78.1235391,
-          latitude: 29.916638,
-        },
-        radius: 20,
-        active: true,
-        createdAt: '2025-02-20T17:01:59.376Z',
-        updatedAt: '2025-02-20T17:01:59.376Z',
-        __v: 0,
-      };
-      jest.spyOn(service, 'findAll').mockImplementationOnce(async () =>
-        Promise.resolve({
-          message: 'Available classes found: 1',
-          data: [oneClass],
-        }),
-      );
-      const result = await controller.findAll();
-      expect(result).toEqual({
-        message: 'Available classes found: 1',
-        data: [oneClass],
-      });
-      expect(service.findAll).toHaveBeenCalled();
+  it('should find all classes for student', async () => {
+    const mockReq = { user: { _id: 'student-id', role: 'student' } };
+    const sortMock = jest.fn().mockResolvedValue([]);
+    service.find.mockReturnValue({ sort: sortMock } as any);
+    const res = await controller.findAll(
+      { courseId: 'course-id' },
+      mockReq as any,
+    );
+    expect(service.find).toHaveBeenCalledWith({
+      students: 'student-id',
+      courseId: 'course-id',
     });
+    expect(res.data).toEqual([]);
+  });
+
+  it('should find all classes for teacher', async () => {
+    const mockReq = { user: { role: 'teacher' } };
+    const sortMock = jest.fn().mockResolvedValue([]);
+    service.find.mockReturnValue({ sort: sortMock } as any);
+    const res = await controller.findAll(
+      { courseId: 'course-id' },
+      mockReq as any,
+    );
+    expect(service.find).toHaveBeenCalledWith({ courseId: 'course-id' });
+    expect(res.data).toEqual([]);
+  });
+
+  it('should get class with students', async () => {
+    service.getClassWithStudents.mockResolvedValue('result');
+    const result = await controller.getClassWithStudents({
+      classId: 'class-id',
+    });
+    expect(result).toBe('result');
+  });
+
+  it('should return class with populated students', async () => {
+    const mockPopulate = jest.fn().mockResolvedValue({ students: [1, 2] });
+    service.findOne.mockReturnValue({ populate: mockPopulate } as any);
+    const res = await controller.findOne({ id: 'class-id' });
+    expect(res.message).toBe('2 student found');
+  });
+
+  it('should throw if class not found', async () => {
+    const mockPopulate = jest.fn().mockResolvedValue(null);
+    service.findOne.mockReturnValue({ populate: mockPopulate } as any);
+    await expect(controller.findOne({ id: 'invalid-id' })).rejects.toThrow(
+      NotFoundException,
+    );
+  });
+
+  it('should update class attendance', async () => {
+    await controller.updateClass({} as any, { user: {} } as any);
+    expect(service.updateClass).toHaveBeenCalled();
+  });
+
+  it('should update attendance list', async () => {
+    await controller.update(
+      { id: 'id' },
+      { students: [{ _id: '', present: true }] },
+    );
+    expect(service.update).toHaveBeenCalled();
+  });
+
+  it('should delete class', async () => {
+    await controller.remove({ id: 'id' });
+    expect(service.findOneAndDelete).toHaveBeenCalledWith({ _id: 'id' });
   });
 });

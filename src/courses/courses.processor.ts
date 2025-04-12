@@ -33,7 +33,7 @@ export class CoursesProcessor extends WorkerHost {
       'Student Name',
       ...classesDates,
     ];
-    let userList: any[] = [];
+    const userList: any[] = [];
     course.students?.forEach((user: any) => {
       let d = [user.registrationNo, user.name];
       classes.forEach((cls) => {

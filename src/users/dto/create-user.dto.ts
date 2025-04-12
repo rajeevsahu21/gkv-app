@@ -12,7 +12,7 @@ export class CreateUserDto {
     { host_whitelist: ['gkv.ac.in'] },
     { message: 'Please use GKV E-mail' },
   )
-  @Transform(({ value }) => value?.trim().toLowerCase())
+  @Transform(({ value }: { value: string }) => value?.trim().toLowerCase())
   email: string;
 
   @IsNotEmpty()
