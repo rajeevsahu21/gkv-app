@@ -23,7 +23,7 @@ export class EmailProcessor extends WorkerHost {
   async process(
     job: Job<{
       subject: string;
-      to: string;
+      to: string | string[];
       body: object;
       templateName: string;
       filePath?: string;

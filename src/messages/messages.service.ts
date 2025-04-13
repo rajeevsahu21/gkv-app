@@ -20,8 +20,12 @@ export class MessagesService {
     return this.messageModel.find(filter);
   }
 
-  findOne(filter: { _id: string }) {
-    return this.messageModel.findOne(filter);
+  async findOneOrThrow(filter: { _id: string }) {
+    const message = await this.messageModel.findOne(filter);
+    if (!message) {
+      throw new NotFoundException('Message Not Found');
+    }
+    return message;
   }
 
   async update(id: string, update: UpdateMessageDto) {

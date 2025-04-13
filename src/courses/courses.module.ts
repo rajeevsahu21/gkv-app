@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BullModule } from '@nestjs/bullmq';
 import { BullBoardModule } from '@bull-board/nestjs';
@@ -11,6 +11,7 @@ import { ClassesModule } from '../classes/classes.module';
 import { MessagesModule } from '../messages/messages.module';
 import { CoursesProcessor } from './courses.processor';
 import { EmailModule } from '../common/email/email.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EmailModule } from '../common/email/email.module';
       name: 'course',
       adapter: BullMQAdapter,
     }),
+    forwardRef(() => UsersModule),
     ClassesModule,
     MessagesModule,
     EmailModule,

@@ -8,7 +8,7 @@ export class EmailService {
 
   addJob(jobData: {
     subject: string;
-    to: string;
+    to: string | string[];
     body: object;
     templateName: string;
     filePath?: string;

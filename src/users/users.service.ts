@@ -71,6 +71,8 @@ export class UsersService {
       resetPasswordToken?: string | null;
       resetPasswordExpires?: number | null;
       lastActivityAt?: Date;
+      parentEmail?: string;
+      parentPhone?: string;
     },
   ) {
     return this.userModel.findOneAndUpdate(filter, update);

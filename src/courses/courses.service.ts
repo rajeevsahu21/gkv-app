@@ -41,7 +41,7 @@ export class CoursesService {
   }
 
   findOne(filter: { _id?: string; students?: string; activeClass?: boolean }) {
-    return this.courseModel.findOne(filter).lean();
+    return this.courseModel.findOne(filter);
   }
 
   async update(id: string, updateCourseDto: UpdateCourseDto, user: IUser) {
@@ -91,6 +91,20 @@ export class CoursesService {
       throw new ConflictException('Student already enrolled');
     }
     await course.updateOne({ $addToSet: { students: studentId } });
+  }
+
+  async inviteStudentsToCourse(courseId: string, filePath: string) {
+    const course = await this.courseModel.findOne({ _id: courseId });
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    await this.courseQueue.add(
+      'invite',
+      { courseId, filePath },
+      { deduplication: { id: courseId } },
+    );
   }
 
   async sendAttendance(courseId: string) {

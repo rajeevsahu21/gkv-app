@@ -1,10 +1,11 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import { utils, writeFile } from 'xlsx';
+import { readFile, utils, writeFile } from 'xlsx';
 
 import { CoursesService } from './courses.service';
 import { ClassesService } from '../classes/classes.service';
 import { EmailService } from '../common/email/email.service';
+import { UsersService } from '../users/users.service';
 
 @Processor('course', { concurrency: 10 })
 export class CoursesProcessor extends WorkerHost {
@@ -12,12 +13,74 @@ export class CoursesProcessor extends WorkerHost {
     private coursesService: CoursesService,
     private classesService: ClassesService,
     private emailService: EmailService,
+    private usersService: UsersService,
   ) {
     super();
   }
 
-  async process(job: Job<{ courseId: string }, any, string>): Promise<any> {
+  async process(
+    job: Job<{ courseId: string; filePath?: string }, any, string>,
+  ): Promise<any> {
     const { courseId } = job.data;
+    if (job.name === 'invite') {
+      const workbook = readFile(job.data?.filePath as string);
+      const wsnames = workbook.SheetNames;
+      const worksheet = workbook.Sheets[wsnames[0]];
+      const length = +(worksheet as any)['!ref'].split(':')[1].substring(1);
+      let newUsers = [];
+      let oldUsers = [];
+      for (let i = 1; i <= length; i++) {
+        const email = worksheet[`A${i}`].v.replace(/\s/g, '').toLowerCase();
+        if (worksheet[`A${i}`] && /^\d{8,9}@gkv\.ac\.in$/.test(email)) {
+          const name = worksheet[`B${i}`]?.v;
+          const parentEmail = worksheet[`C${i}`]?.v;
+          const parentPhone = worksheet[`D${i}`]?.v;
+          const oldUser = await this.usersService.findOneAndUpdate(
+            { email },
+            { name, parentEmail, parentPhone },
+          );
+          if (oldUser) {
+            oldUsers.push(oldUser);
+          } else {
+            const newUser = await this.usersService.create({
+              email,
+              name,
+              role: 'student',
+              parentEmail,
+              parentPhone,
+              registrationNo: email.split('@')[0],
+            } as any);
+            newUsers.push(newUser);
+            await this.emailService.addJob({
+              subject: 'Account Created',
+              to: newUser.email,
+              body: { NAME: newUser.name || 'There' },
+              templateName: 'account-creation',
+            });
+          }
+        }
+      }
+      const allUsers = [...oldUsers, ...newUsers];
+      const studentIds = allUsers.map((student) => student._id);
+      const course = await this.coursesService
+        .findOne({ _id: courseId })
+        .populate('teacher', 'name');
+      if (!course) {
+        return;
+      }
+      await course.updateOne({ $addToSet: { students: studentIds } });
+      const emails = allUsers.map((user) => user.email);
+      await this.emailService.addJob({
+        subject: `Course Invitation for ${course.courseName}`,
+        to: emails,
+        body: {
+          COURSE: course.courseName,
+          TEACHER: (course.teacher as any).name,
+        },
+        templateName: 'course-invite',
+      });
+      return;
+    }
     const course = await this.coursesService
       .findOne({ _id: courseId })
       .populate('students', 'name registrationNo')
@@ -32,17 +95,32 @@ export class CoursesProcessor extends WorkerHost {
       'Registration No',
       'Student Name',
       ...classesDates,
+      'Attendance %',
     ];
     const userList: any[] = [];
-    course.students?.forEach((user: any) => {
-      let d = [user.registrationNo, user.name];
-      classes.forEach((cls) => {
-        d = cls.students.find((stu) => stu.toString() === user._id.toString())
-          ? [...d, 'P']
-          : [...d, ''];
+    course.students
+      .sort((a, b) => +(a as any).registrationNo - +(b as any).registrationNo)
+      ?.forEach((user: any) => {
+        const d = [user.registrationNo, user.name];
+        let presentCount = 0;
+        classes.forEach((cls) => {
+          const isPresent = cls.students.find(
+            (stu) => stu.toString() === user._id.toString(),
+          );
+          if (isPresent) {
+            d.push('P');
+            presentCount++;
+          } else {
+            d.push('');
+          }
+        });
+        const attendancePercentage = (
+          (presentCount / classes.length) *
+          100
+        ).toFixed(2);
+        d.push(`${attendancePercentage}%`);
+        userList.push(d);
       });
-      userList.push(d);
-    });
 
     const workSheetName = 'students';
     const filePath = `./${course.courseName}.xlsx`;

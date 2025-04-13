@@ -6,7 +6,7 @@ import { NotFoundException } from '@nestjs/common';
 const mockMessagesService = {
   create: jest.fn(),
   find: jest.fn(),
-  findOne: jest.fn(),
+  findOneOrThrow: jest.fn(),
   update: jest.fn(),
   remove: jest.fn(),
 };
@@ -49,9 +49,9 @@ describe('MessagesController', () => {
   });
 
   it('should return a single message', async () => {
-    service.findOne.mockResolvedValue({ text: 'Hello' });
+    service.findOneOrThrow.mockResolvedValue({ text: 'Hello' });
     const result = await controller.findOne({ id: 'id' });
-    expect(service.findOne).toHaveBeenCalledWith({ _id: 'id' });
+    expect(service.findOneOrThrow).toHaveBeenCalledWith({ _id: 'id' });
     expect(result).toEqual({
       message: 'Message Found successfully',
       data: { text: 'Hello' },

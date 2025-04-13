@@ -63,7 +63,9 @@ export class ClassesService {
       .findOne({ _id: cls.courseId.toString() })
       .populate('students', 'registrationNo name');
 
-    const courseStudent = course?.students;
+    const courseStudent = course?.students.sort(
+      (a, b) => +(a as any).registrationNo - +(b as any).registrationNo,
+    );
     const classStudent = cls.students;
     const data: any[] = [];
     courseStudent?.forEach((student: any) => {

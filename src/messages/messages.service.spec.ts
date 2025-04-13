@@ -52,7 +52,7 @@ describe('MessagesService', () => {
   it('should find one message by id', async () => {
     const result = { text: 'Hello', _id: 'message123' };
     model.findOne.mockReturnValue(result);
-    const message = await service.findOne({ _id: 'message123' });
+    const message = await service.findOneOrThrow({ _id: 'message123' });
     expect(message).toEqual(result);
     expect(model.findOne).toHaveBeenCalledWith({ _id: 'message123' });
   });

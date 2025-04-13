@@ -12,7 +12,10 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
+import { extname } from 'path';
+import { diskStorage } from 'multer';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -72,13 +75,51 @@ export class CoursesController {
   @HttpCode(HttpStatus.OK)
   @Post('invite')
   @UseInterceptors(
-    FileInterceptor('emails', { dest: './uploads', preservePath: true }),
+    FileInterceptor('emails', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename(req, file, callback) {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const extension = extname(file.originalname);
+          callback(null, file.fieldname + '-' + uniqueSuffix + extension);
+        },
+      }),
+      fileFilter(req, file, callback) {
+        const allowedMimeTypes = [
+          'text/csv',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/vnd.ms-excel',
+        ];
+        const allowedExtensions = ['.csv', '.xlsx', '.xls'];
+        const fileExtension = extname(file.originalname).toLowerCase();
+
+        if (
+          allowedMimeTypes.includes(file.mimetype) &&
+          allowedExtensions.includes(fileExtension)
+        ) {
+          callback(null, true);
+        } else {
+          callback(
+            new BadRequestException('Only CSV and Excel files are allowed'),
+            false,
+          );
+        }
+      },
+    }),
   )
   async inviteStudents(
     @UploadedFile() file: Express.Multer.File,
     @Body() courseDto: CourseDto,
   ) {
-    console.log(file, file.path);
+    if (!file) {
+      throw new BadRequestException('File not found');
+    }
+    await this.coursesService.inviteStudentsToCourse(
+      courseDto.courseId,
+      file.path,
+    );
+    return { message: 'Email sent to everyone' };
   }
 
   @Roles(Role.Teacher)

@@ -29,7 +29,5 @@ export class CreateClassDto {
   location: LocationDto;
 
   @IsOptional()
-  @IsNumber()
-  @IsPositive()
   radius?: number;
 }
