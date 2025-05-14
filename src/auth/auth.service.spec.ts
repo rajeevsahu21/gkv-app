@@ -1,10 +1,11 @@
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
+
 import { UsersService } from '../users/users.service';
 import { CoursesService } from '../courses/courses.service';
-import { EmailService } from '../common/email/email.service';
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import { NotificationService } from '../common/notification/notification.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -22,7 +23,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let usersService: UsersService;
   let coursesService: CoursesService;
-  let emailService: EmailService;
+  let notificationService: NotificationService;
 
   const mockUsersService = {
     findOneOrThrow: jest.fn(),
@@ -36,8 +37,8 @@ describe('AuthService', () => {
     findOne: jest.fn().mockReturnValue({ select: jest.fn() }),
   };
 
-  const mockEmailService = {
-    addJob: jest.fn(),
+  const mockNotificationService = {
+    addEmailJob: jest.fn(),
   };
 
   const mockJwtService = {
@@ -50,7 +51,7 @@ describe('AuthService', () => {
         AuthService,
         { provide: UsersService, useValue: mockUsersService },
         { provide: CoursesService, useValue: mockCoursesService },
-        { provide: EmailService, useValue: mockEmailService },
+        { provide: NotificationService, useValue: mockNotificationService },
         { provide: JwtService, useValue: mockJwtService },
       ],
     }).compile();
@@ -58,7 +59,7 @@ describe('AuthService', () => {
     service = module.get<AuthService>(AuthService);
     usersService = module.get<UsersService>(UsersService);
     coursesService = module.get<CoursesService>(CoursesService);
-    emailService = module.get<EmailService>(EmailService);
+    notificationService = module.get<NotificationService>(NotificationService);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -114,7 +115,7 @@ describe('AuthService', () => {
         'User was registered successfully! Please check your email',
       );
       expect(mockUsersService.create).toHaveBeenCalled();
-      expect(mockEmailService.addJob).toHaveBeenCalled();
+      expect(mockNotificationService.addEmailJob).toHaveBeenCalled();
     });
 
     it('should throw conflict if user already exists', async () => {

@@ -3,16 +3,16 @@ import { Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
 
 @Injectable()
-export class EmailService {
-  constructor(@InjectQueue('email') private emailQueue: Queue) {}
+export class NotificationService {
+  constructor(@InjectQueue('notification') private notificationQueue: Queue) {}
 
-  addJob(jobData: {
+  addEmailJob(jobData: {
     subject: string;
     to: string | string[];
     body: object;
     templateName: string;
     filePath?: string;
   }) {
-    return this.emailQueue.add('email', jobData);
+    return this.notificationQueue.add('email', jobData);
   }
 }

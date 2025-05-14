@@ -5,8 +5,8 @@ import { join } from 'path';
 import { compile } from 'handlebars';
 import { readFileSync } from 'fs';
 
-@Processor('email', { concurrency: 10 })
-export class EmailProcessor extends WorkerHost {
+@Processor('notification', { concurrency: 10 })
+export class NotificationProcessor extends WorkerHost {
   private readonly transporter: Transporter;
   constructor() {
     super();
@@ -28,8 +28,23 @@ export class EmailProcessor extends WorkerHost {
       templateName: string;
       filePath?: string;
     }>,
-  ): Promise<any> {
-    const { subject, to, body, templateName, filePath } = job.data;
+  ) {
+    switch (job.name) {
+      case 'email':
+        return this.sendEmail(job.data);
+      default:
+        throw new Error(`Unknown job name: ${job.name}`);
+    }
+  }
+
+  async sendEmail(jobData: {
+    subject: string;
+    to: string | string[];
+    body: object;
+    templateName: string;
+    filePath?: string;
+  }) {
+    const { subject, to, body, templateName, filePath } = jobData;
     const templatePath = join(
       process.cwd(),
       'public',

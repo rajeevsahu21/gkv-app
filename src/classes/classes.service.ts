@@ -37,9 +37,12 @@ export class ClassesService {
 
     await this.classModel.create({ courseId, location, radius });
     await Promise.all([
-      this.coursesService.updateOne({ _id: courseId }, { activeClass: true }),
+      this.coursesService.updateOne(
+        { _id: courseId },
+        { activeClass: true, radius },
+      ),
       this.classQueue.add(
-        'class',
+        'close',
         { courseId },
         { delay: 300000, deduplication: { id: courseId } },
       ),

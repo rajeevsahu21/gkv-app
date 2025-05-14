@@ -103,10 +103,10 @@ describe('ClassesService', () => {
       });
       expect(coursesService.updateOne).toHaveBeenCalledWith(
         { _id: createClassDto.courseId },
-        { activeClass: true },
+        { activeClass: true, radius: createClassDto.radius },
       );
       expect(classQueue.add).toHaveBeenCalledWith(
-        'class',
+        'close',
         { courseId: createClassDto.courseId },
         { delay: 300000, deduplication: { id: createClassDto.courseId } },
       );

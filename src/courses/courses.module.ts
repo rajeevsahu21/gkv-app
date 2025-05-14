@@ -10,7 +10,7 @@ import { Course, CourseSchema } from './course.model';
 import { ClassesModule } from '../classes/classes.module';
 import { MessagesModule } from '../messages/messages.module';
 import { CoursesProcessor } from './courses.processor';
-import { EmailModule } from '../common/email/email.module';
+import { NotificationModule } from '../common/notification/notification.module';
 import { UsersModule } from '../users/users.module';
 
 @Module({
@@ -24,7 +24,7 @@ import { UsersModule } from '../users/users.module';
     forwardRef(() => UsersModule),
     ClassesModule,
     MessagesModule,
-    EmailModule,
+    NotificationModule,
   ],
   controllers: [CoursesController],
   providers: [CoursesService, CoursesProcessor],

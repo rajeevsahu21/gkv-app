@@ -72,7 +72,10 @@ export class CoursesService {
     };
   }
 
-  updateOne(filter: { _id: string }, update: { activeClass: boolean }) {
+  updateOne(
+    filter: { _id: string },
+    update: { activeClass: boolean; radius?: number },
+  ) {
     return this.courseModel.updateOne(filter, update);
   }
 
@@ -117,7 +120,7 @@ export class CoursesService {
       throw new NotFoundException('No Classes found');
     }
     await this.courseQueue.add(
-      'course',
+      'attendance',
       { courseId },
       { deduplication: { id: courseId } },
     );

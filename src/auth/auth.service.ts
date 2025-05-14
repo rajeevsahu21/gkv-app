@@ -18,7 +18,7 @@ import { UsersService } from '../users/users.service';
 import { CoursesService } from '../courses/courses.service';
 import { EmailDto } from './dto/email.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
-import { EmailService } from '../common/email/email.service';
+import { NotificationService } from '../common/notification/notification.service';
 
 @Injectable()
 export class AuthService {
@@ -28,7 +28,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
     private readonly coursesService: CoursesService,
-    private readonly emailService: EmailService,
+    private readonly notificationService: NotificationService,
   ) {
     this.client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   }
@@ -95,7 +95,7 @@ export class AuthService {
       password: hashPassword,
       confirmationCode,
     });
-    await this.emailService.addJob({
+    await this.notificationService.addEmailJob({
       subject: 'Please confirm your account',
       to: registerDto.email,
       body: {
@@ -226,7 +226,7 @@ export class AuthService {
       throw new UnauthorizedException('No User found with given email');
     }
 
-    await this.emailService.addJob({
+    await this.notificationService.addEmailJob({
       subject: 'Password change request',
       to: user.email,
       body: {
@@ -294,7 +294,7 @@ export class AuthService {
       });
     }
 
-    await this.emailService.addJob({
+    await this.notificationService.addEmailJob({
       subject: 'Your password has been changed',
       to: user.email,
       body: {
