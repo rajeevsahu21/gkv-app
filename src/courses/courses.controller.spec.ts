@@ -59,11 +59,13 @@ describe('CoursesController', () => {
   });
 
   it('should find a course and populate students', async () => {
-    const populateMock = jest.fn().mockResolvedValue('populated-course');
+    const populateMock = jest.fn().mockResolvedValue({ students: [] });
     service.findOne.mockReturnValue({ populate: populateMock } as any);
     const result = await controller.findOne({ id: 'course-id' });
     expect(result).toEqual({
-      data: 'populated-course',
+      data: {
+        students: [],
+      },
       message: 'Course Found successfully',
     });
   });

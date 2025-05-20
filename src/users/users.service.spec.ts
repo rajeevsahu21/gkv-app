@@ -3,6 +3,9 @@ import { getModelToken } from '@nestjs/mongoose';
 import { UsersService } from './users.service';
 import { User } from './user.model';
 import { NotFoundException } from '@nestjs/common';
+import { CoursesService } from '../courses/courses.service';
+import { ClassesService } from '../classes/classes.service';
+import { NotificationService } from '../common/notification/notification.service';
 
 const mockUserModel = () => ({
   create: jest.fn(),
@@ -11,6 +14,11 @@ const mockUserModel = () => ({
   updateOne: jest.fn(),
   findOneAndUpdate: jest.fn(),
   countDocuments: jest.fn(),
+});
+
+const mockCoursesService = () => ({
+  updateOne: jest.fn(),
+  find: jest.fn(),
 });
 
 describe('UsersService', () => {
@@ -25,6 +33,9 @@ describe('UsersService', () => {
           provide: getModelToken(User.name),
           useFactory: mockUserModel,
         },
+        { provide: CoursesService, useFactory: mockCoursesService },
+        { provide: ClassesService, useValue: { find: jest.fn() } },
+        { provide: NotificationService, useValue: { addEmailJob: jest.fn() } },
       ],
     }).compile();
 

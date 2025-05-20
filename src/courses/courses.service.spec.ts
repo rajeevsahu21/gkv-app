@@ -4,7 +4,6 @@ import { CoursesService } from './courses.service';
 import { Course } from './course.model';
 import { MessagesService } from '../messages/messages.service';
 import { ClassesService } from '../classes/classes.service';
-import { Queue } from 'bullmq';
 import {
   BadRequestException,
   ConflictException,

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendance Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Orbitron"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Merriweather&family=Montserrat&family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body
+    style="
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+    "
+  >
+    <center>
+      <div
+        style="
+          max-width: 600px;
+          width: 100%;
+          background-color: #ffffff;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          margin: 20px auto;
+          border-radius: 8px;
+          overflow: hidden;
+        "
+      >
+        <header
+          style="
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #ffffff;
+            border-bottom: solid #a5d7e8;
+            border-width: thin;
+          "
+        >
+          <img
+            src="https://play-lh.googleusercontent.com/asrfS4x89LkxFILsB4rYxFmX7n0K61MM0QEHpQ7GMlzfekHIeNLHxlP5dEbt1SstnFU=w240-h480"
+            width="60px"
+            height="50px"
+            alt="GKV"
+            style="border-radius: 8px"
+          />
+          <p
+            style="
+              font-family: Merriweather;
+              color: #002b5b;
+              margin-left: 20px;
+              font-size: 22px;
+              font-weight: bold;
+            "
+          >
+            GKV<span style="color: #0078d4"> App</span>
+          </p>
+        </header>
+
+        <div style="padding: 20px 30px">
+          <h2 style="color: #333; margin-bottom: 20px; text-align: center">
+            Attendance Report
+          </h2>
+
+          <div
+            style="
+              background-color: #f7f7f7;
+              border-radius: 8px;
+              padding: 20px;
+              margin-bottom: 20px;
+            "
+          >
+            <p style="font-size: 16px; color: #333; margin-top: 0">
+              Dear Parent,
+            </p>
+            <p style="font-size: 16px; color: #333; line-height: 1.5">
+              This is to inform you that your child
+              <strong>{{NAME}}</strong> has missed today's classes for the
+              following courses:
+            </p>
+
+            <ul
+              style="
+                background-color: #ffffff;
+                border-radius: 8px;
+                padding: 15px 15px 15px 35px;
+                margin: 15px 0;
+                border-left: 4px solid #ff6b6b;
+              "
+            >
+              {{#each MISSEDCOURSES}}
+              <li style="margin-bottom: 8px; color: #333">{{this}}</li>
+              {{/each}}
+            </ul>
+
+            <p style="font-size: 16px; color: #333; line-height: 1.5">
+              Regular attendance is important for academic success. Please
+              ensure your child attends all scheduled classes.
+            </p>
+          </div>
+
+          <div style="text-align: center; margin: 30px 0">
+            <img
+              src="https://png.pngtree.com/png-vector/20190726/ourmid/pngtree-package-pending-icon-for-your-project-png-image_1599195.jpg"
+              width="100px"
+              alt="Attendance"
+              style="margin-bottom: 15px"
+            />
+            <p style="font-size: 14px; color: #666; margin-top: 5px">
+              Track your child's attendance in real-time using the GKV App
+            </p>
+          </div>
+        </div>
+
+        <div
+          style="
+            background-color: #f7f7f7;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #eaeaea;
+          "
+        >
+          <p
+            style="
+              font-weight: 600;
+              font-size: 16px;
+              color: #333;
+              margin-bottom: 15px;
+            "
+          >
+            Download the GKV App
+          </p>
+
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              margin-bottom: 20px;
+            "
+          >
+            <div style="margin-right: 20px">
+              <p
+                style="
+                  word-wrap: break-word;
+                  font-weight: 600;
+                  font-size: 14px;
+                  color: #555;
+                "
+              >
+                Available on<br />Google Play
+              </p>
+            </div>
+            <a
+              href="https://play.google.com/store/apps/details?id=com.gkv.gkvapp"
+              style="cursor: pointer; display: block"
+            >
+              <img
+                src="https://cdn.me-qr.com/qr/55920118.png?v=1681240451"
+                style="overflow: hidden; border-radius: 8px"
+                width="120px"
+                alt="Download app from Playstore"
+              />
+            </a>
+          </div>
+        </div>
+
+        <footer
+          style="
+            background-color: #002b5b;
+            color: #ffffff;
+            padding: 15px;
+            text-align: center;
+          "
+        >
+          <p style="font-size: 14px; margin: 0 0 10px 0">
+            © 2025 GKV App. All rights reserved.
+          </p>
+          <p style="font-size: 12px; color: #ccc; margin: 0">
+            You have received this email because your email ID is registered
+            with GKV App. This is a system-generated email, please do not reply
+            to this message.
+          </p>
+        </footer>
+      </div>
+    </center>
+  </body>
+</html>

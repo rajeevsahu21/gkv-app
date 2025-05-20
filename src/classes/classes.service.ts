@@ -49,7 +49,7 @@ export class ClassesService {
     ]);
   }
 
-  find(filter: { courseId: string; students?: string }) {
+  find(filter: { courseId: string; students?: string; createdAt?: any }) {
     return this.classModel.find(filter);
   }
 

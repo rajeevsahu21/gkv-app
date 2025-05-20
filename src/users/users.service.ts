@@ -5,10 +5,19 @@ import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './user.model';
+import { Cron } from '@nestjs/schedule';
+import { CoursesService } from '../courses/courses.service';
+import { ClassesService } from '../classes/classes.service';
+import { NotificationService } from '../common/notification/notification.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private readonly coursesService: CoursesService,
+    private readonly classesService: ClassesService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   create(createUserDto: CreateUserDto) {
     return this.userModel.create(createUserDto);
@@ -76,5 +85,69 @@ export class UsersService {
     },
   ) {
     return this.userModel.findOneAndUpdate(filter, update);
+  }
+
+  @Cron('0 18 * * 1,2,3,4,5,6')
+  async sendDailyAttendanceReports() {
+    const currentDate = new Date();
+    currentDate.setUTCHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(currentDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    // Find all students
+    const students = await this.userModel
+      .find({ role: 'student', status: 'active' })
+      .lean();
+
+    for (const student of students) {
+      // Skip if no parent email is available or is invalid
+      if (
+        !student.parentEmail ||
+        !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
+          student.parentEmail,
+        )
+      ) {
+        continue;
+      }
+      const missedClasses = [];
+
+      // Find courses for this student
+      const courses = await this.coursesService
+        .find({
+          students: student._id.toString(),
+        })
+        .lean();
+      for (const course of courses) {
+        // Find classes for this course that happened today
+        const classes = await this.classesService
+          .find({
+            courseId: course._id.toString(),
+            createdAt: {
+              $gte: currentDate,
+              $lt: endOfDay,
+            },
+          })
+          .lean();
+
+        // Check if student missed any classes
+        for (const classItem of classes) {
+          if (!classItem.students.includes(student._id)) {
+            missedClasses.push(course.courseName);
+            break; // Only count each course once
+          }
+        }
+      }
+
+      // Send email if the student missed classes
+      if (missedClasses.length > 0) {
+        await this.notificationService.addEmailJob({
+          subject: 'Attendence Report of your child',
+          to: student.parentEmail,
+          body: { NAME: student.name, MISSEDCOURSES: missedClasses },
+          templateName: 'attendance-report',
+        });
+      }
+    }
   }
 }

@@ -60,6 +60,9 @@ export class CoursesController {
   async findOne(@Param() idDto: IdDto) {
     const course = this.coursesService.findOne({ _id: idDto.id });
     const data = await course.populate('students', 'registrationNo name');
+    data?.students.sort(
+      (a, b) => +(a as any).registrationNo - +(b as any).registrationNo,
+    );
     return { data, message: 'Course Found successfully' };
   }
 

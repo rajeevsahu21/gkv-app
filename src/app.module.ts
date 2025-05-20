@@ -7,6 +7,7 @@ import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -45,6 +46,7 @@ import { NotificationModule } from './common/notification/notification.module';
         },
       ],
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
     CoursesModule,
