@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException } from '@nestjs/common';
+
 import { MessagesService } from './messages.service';
 import { Message } from './message.model';
-import { Model } from 'mongoose';
 
 const mockMessageModel = () => ({
   create: jest.fn(),

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { MessagesController } from './messages.controller';
 import { MessagesService } from './messages.service';
-import { NotFoundException } from '@nestjs/common';
 
 const mockMessagesService = {
   create: jest.fn(),

@@ -26,7 +26,7 @@ export class UsersController {
   }
 
   @Get('me')
-  create(@Req() req: IRequest) {
+  get(@Req() req: IRequest) {
     return {
       version: this.version,
       message: 'User Found Successfully',

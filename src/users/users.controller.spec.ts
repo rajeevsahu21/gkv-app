@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { CoursesService } from '../courses/courses.service';
@@ -41,10 +42,10 @@ describe('UsersController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('create (me)', () => {
+  describe('get (me)', () => {
     it('should return user details with version', () => {
       const req = { user: { _id: 'Test User' } } as IRequest;
-      const result = controller.create(req);
+      const result = controller.get(req);
       expect(result).toHaveProperty('version');
       expect(result).toHaveProperty('message', 'User Found Successfully');
       expect(result).toHaveProperty('data', req.user);

@@ -66,6 +66,12 @@ export class CoursesController {
     return { data, message: 'Course Found successfully' };
   }
 
+  /**
+   *
+   * @throws {400} Course closed for enrollment
+   * @throws {404} Course not found
+   * @throws {409} Student already enrolled
+   */
   @Roles(Role.Student)
   @HttpCode(HttpStatus.OK)
   @Post('enroll')
@@ -74,6 +80,11 @@ export class CoursesController {
     return { message: 'Course Enrollment Done' };
   }
 
+  /**
+   *
+   * @throws {400} Only CSV and Excel files are allowed
+   * @throws {404} Course not found
+   */
   @Roles(Role.Teacher)
   @HttpCode(HttpStatus.OK)
   @Post('invite')
@@ -125,6 +136,11 @@ export class CoursesController {
     return { message: 'Email sent to everyone' };
   }
 
+  /**
+   *
+   *
+   * @throws {404} Course not found
+   */
   @Roles(Role.Teacher)
   @HttpCode(HttpStatus.OK)
   @Post('attendance')
@@ -132,6 +148,11 @@ export class CoursesController {
     return this.coursesService.sendAttendance(courseDto.courseId);
   }
 
+  /**
+   *
+   *
+   * @throws {404} Course not found
+   */
   @Put(':id')
   update(
     @Param() idDto: IdDto,
@@ -141,6 +162,11 @@ export class CoursesController {
     return this.coursesService.update(idDto.id, updateCourseDto, req.user);
   }
 
+  /**
+   *
+   *
+   * @throws {404} Course not found
+   */
   @Roles(Role.Teacher)
   @Delete(':id')
   async remove(@Param() idDto: IdDto) {

@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { CoursesController } from './courses.controller';
 import { CoursesService } from './courses.service';
 import { Role } from '../users/user.model';
-import { NotFoundException } from '@nestjs/common';
 
 const mockCoursesService = {
   create: jest.fn(),

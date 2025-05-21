@@ -4,15 +4,15 @@ import {
   Type,
   ValidationPipe,
 } from '@nestjs/common';
+import * as basicAuth from 'express-basic-auth';
 import { NestContainer, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as basicAuth from 'express-basic-auth';
+import { DebuggedTree, SpelunkerModule } from 'nestjs-spelunker';
+import { writeFileSync } from 'fs';
 import helmet from 'helmet';
 
 import './common/utils/instrument';
 import { AppModule } from './app.module';
-import { DebuggedTree, SpelunkerModule } from 'nestjs-spelunker';
-import { writeFileSync } from 'fs';
 import { CoursesModule } from './courses/courses.module';
 
 const port = process.env.PORT || 8080;

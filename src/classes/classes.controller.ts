@@ -28,6 +28,11 @@ import { ClassDto } from './dto/class.dto';
 export class ClassesController {
   constructor(private readonly classesService: ClassesService) {}
 
+  /**
+   *
+   *
+   * @throws {400} Already Have a running class
+   */
   @Roles(Role.Teacher)
   @Post()
   async create(@Body() createClassDto: CreateClassDto) {
@@ -46,12 +51,22 @@ export class ClassesController {
     return { message: `Available classes found: ${data.length}`, data };
   }
 
+  /**
+   *
+   *
+   * @throws {404} Class not found
+   */
   @Roles(Role.Teacher)
   @Get('students')
   async getClassWithStudents(@Query() { classId }: ClassDto) {
     return this.classesService.getClassWithStudents(classId);
   }
 
+  /**
+   *
+   *
+   * @throws {404} Class not found
+   */
   @Roles(Role.Teacher)
   @Get(':id')
   async findOne(@Param() idDto: IdDto) {
@@ -66,6 +81,12 @@ export class ClassesController {
     };
   }
 
+  /**
+   *
+   *
+   * @throws {400} Required field is missing
+   * @throws {404} No running Class found
+   */
   @Put()
   updateClass(
     @Body() markAttendanceDto: MarkAttendanceDto,
@@ -81,6 +102,11 @@ export class ClassesController {
     return { message: 'Attendance updated Successfully' };
   }
 
+  /**
+   *
+   *
+   * @throws {404} Class not found
+   */
   @Roles(Role.Teacher)
   @Delete(':id')
   async remove(@Param() idDto: IdDto) {

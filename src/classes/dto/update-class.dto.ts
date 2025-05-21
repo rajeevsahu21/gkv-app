@@ -6,9 +6,9 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { PartialType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 import { CreateClassDto } from './create-class.dto';
-import { Type } from 'class-transformer';
 
 class Student {
   @IsMongoId()

@@ -38,6 +38,11 @@ export class MessagesController {
     return { message: 'All Messages found', total: data.length, data };
   }
 
+  /**
+   *
+   *
+   * @throws {404} Message Not Found
+   */
   @Roles(Role.Teacher)
   @Get(':id')
   async findOne(@Param() idDto: IdDto) {
@@ -45,6 +50,11 @@ export class MessagesController {
     return { message: 'Message Found successfully', data };
   }
 
+  /**
+   *
+   *
+   * @throws {404} Message Not Found
+   */
   @Roles(Role.Teacher)
   @Put(':id')
   async update(
@@ -55,6 +65,11 @@ export class MessagesController {
     return { message: 'Message Updated successfully' };
   }
 
+  /**
+   *
+   *
+   * @throws {404} Message Not Found
+   */
   @Roles(Role.Teacher)
   @Delete(':id')
   async remove(@Param() idDto: IdDto) {

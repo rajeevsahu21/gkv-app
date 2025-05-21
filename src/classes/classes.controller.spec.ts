@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
+
 import { ClassesController } from './classes.controller';
 import { ClassesService } from './classes.service';
-import { NotFoundException } from '@nestjs/common';
 
 const mockClassesService = {
   create: jest.fn(),

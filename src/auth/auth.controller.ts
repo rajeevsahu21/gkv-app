@@ -45,7 +45,6 @@ export class AuthController {
   }
 
   /**
-   *
    * Auth With Google
    *
    * @throws {400} Invalid user detected. Please try again
@@ -57,7 +56,7 @@ export class AuthController {
   }
 
   /**
-   *
+   * Confirm Account
    *
    * @throws User Not Found
    */

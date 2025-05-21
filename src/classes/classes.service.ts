@@ -64,7 +64,8 @@ export class ClassesService {
     }
     const course = await this.coursesService
       .findOne({ _id: cls.courseId.toString() })
-      .populate('students', 'registrationNo name');
+      .populate('students', 'registrationNo name')
+      .lean();
 
     const courseStudent = course?.students.sort(
       (a, b) => +(a as any).registrationNo - +(b as any).registrationNo,

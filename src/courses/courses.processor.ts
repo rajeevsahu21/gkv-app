@@ -38,8 +38,8 @@ export class CoursesProcessor extends WorkerHost {
     const wsnames = workbook.SheetNames;
     const worksheet = workbook.Sheets[wsnames[0]];
     const length = +(worksheet as any)['!ref'].split(':')[1].substring(1);
-    let newUsers = [];
-    let oldUsers = [];
+    const newUsers = [];
+    const oldUsers = [];
     for (let i = 1; i <= length; i++) {
       const email = worksheet[`A${i}`].v.replace(/\s/g, '').toLowerCase();
       if (worksheet[`A${i}`] && /^\d{8,9}@gkv\.ac\.in$/.test(email)) {

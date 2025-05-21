@@ -176,7 +176,9 @@ describe('ClassesService', () => {
 
       (classModel.findOne as jest.Mock).mockResolvedValue(mockClass);
       (coursesService.findOne as jest.Mock).mockReturnValue({
-        populate: jest.fn().mockResolvedValue(mockCourse),
+        populate: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue(mockCourse),
+        }),
       });
 
       const result = await service.getClassWithStudents(classId);

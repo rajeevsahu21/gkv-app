@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
+import { NotFoundException } from '@nestjs/common';
+
 import { UsersService } from './users.service';
 import { User } from './user.model';
-import { NotFoundException } from '@nestjs/common';
 import { CoursesService } from '../courses/courses.service';
 import { ClassesService } from '../classes/classes.service';
 import { NotificationService } from '../common/notification/notification.service';

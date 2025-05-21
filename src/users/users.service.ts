@@ -1,11 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Cron } from '@nestjs/schedule';
 
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './user.model';
-import { Cron } from '@nestjs/schedule';
 import { CoursesService } from '../courses/courses.service';
 import { ClassesService } from '../classes/classes.service';
 import { NotificationService } from '../common/notification/notification.service';
@@ -97,13 +96,16 @@ export class UsersService {
 
     // Find all students
     const students = await this.userModel
-      .find({ role: 'student', status: 'active' })
+      .find({
+        role: 'student',
+        status: 'active',
+        parentEmail: { $exists: true },
+      })
       .lean();
 
     for (const student of students) {
-      // Skip if no parent email is available or is invalid
+      // Skip if parent email is invalid
       if (
-        !student.parentEmail ||
         !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
           student.parentEmail,
         )

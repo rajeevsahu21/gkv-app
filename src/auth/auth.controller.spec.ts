@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ThrottlerGuard } from '@nestjs/throttler';
+
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
 import { EmailDto } from './dto/email.dto';
-import { ThrottlerGuard } from '@nestjs/throttler';
 
 describe('AuthController', () => {
   let controller: AuthController;
