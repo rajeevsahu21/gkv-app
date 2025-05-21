@@ -87,7 +87,10 @@ export class ClassesService {
     });
     await Promise.all([
       this.classModel.updateOne({ _id: id }, { $addToSet: { students: mark } }),
-      this.classModel.updateOne({ _id: id }, { $pull: { students: unMark } }),
+      this.classModel.updateOne(
+        { _id: id },
+        { $pull: { students: { $in: unMark } } },
+      ),
     ]);
   }
 
