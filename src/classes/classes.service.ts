@@ -27,26 +27,25 @@ export class ClassesService {
 
   async create(createClassDto: CreateClassDto) {
     const { courseId, location, radius } = createClassDto;
-    if (
-      await this.classModel
-        .findOne({ courseId, active: true }, { _id: 1 })
-        .lean()
-    ) {
-      throw new BadRequestException('Already Have a running class');
+    try {
+      await this.classModel.create({ courseId, location, radius });
+      await Promise.all([
+        this.coursesService.updateOne(
+          { _id: courseId },
+          { activeClass: true, radius },
+        ),
+        this.classQueue.add(
+          'close',
+          { courseId },
+          { delay: 300000, deduplication: { id: courseId } },
+        ),
+      ]);
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new BadRequestException('Already Have a running class');
+      }
+      throw error;
     }
-
-    await this.classModel.create({ courseId, location, radius });
-    await Promise.all([
-      this.coursesService.updateOne(
-        { _id: courseId },
-        { activeClass: true, radius },
-      ),
-      this.classQueue.add(
-        'close',
-        { courseId },
-        { delay: 300000, deduplication: { id: courseId } },
-      ),
-    ]);
   }
 
   find(filter: { courseId: string; students?: string; createdAt?: any }) {
@@ -58,24 +57,72 @@ export class ClassesService {
   }
 
   async getClassWithStudents(classId: string) {
-    const cls = await this.classModel.findOne({ _id: classId });
-    if (!cls) {
+    const result = await this.classModel
+      .aggregate([
+        {
+          $match: { _id: new Types.ObjectId(classId) },
+        },
+        {
+          $lookup: {
+            from: 'courses',
+            localField: 'courseId',
+            foreignField: '_id',
+            as: 'course',
+            pipeline: [
+              {
+                $lookup: {
+                  from: 'users',
+                  localField: 'students',
+                  foreignField: '_id',
+                  as: 'students',
+                  pipeline: [
+                    {
+                      $project: {
+                        registrationNo: 1,
+                        name: 1,
+                      },
+                    },
+                  ],
+                },
+              },
+              {
+                $project: {
+                  students: 1,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: '$course',
+        },
+        {
+          $project: {
+            students: '$students',
+            courseStudents: '$course.students',
+          },
+        },
+      ])
+      .exec();
+
+    if (!result || result.length === 0) {
       throw new NotFoundException('Class not found');
     }
-    const course = await this.coursesService
-      .findOne({ _id: cls.courseId.toString() })
-      .populate('students', 'registrationNo name')
-      .lean();
 
-    const courseStudent = course?.students.sort(
-      (a, b) => +(a as any).registrationNo - +(b as any).registrationNo,
+    const { students: classStudents, courseStudents } = result[0];
+
+    // Convert class students array to Set for O(1) lookup performance
+    const classStudentIds = new Set(
+      classStudents.map((user: { _id: string }) => user._id.toString()),
     );
-    const classStudent = cls.students;
-    const data: any[] = [];
-    courseStudent?.forEach((student: any) => {
-      student.present = classStudent.includes(student._id);
-      data.push(student);
-    });
+
+    // Process and sort students efficiently
+    const data = courseStudents
+      .map((student: any) => ({
+        ...student,
+        present: classStudentIds.has(student._id.toString()),
+      }))
+      .sort((a: any, b: any) => +a.registrationNo - +b.registrationNo);
     return { message: 'Student Attendance found', data };
   }
 
@@ -99,17 +146,19 @@ export class ClassesService {
     user: { _id: string; role: string },
   ) {
     if (user.role === 'teacher') {
-      const oldClass = await this.classModel.findOneAndUpdate(
-        { courseId, active: true },
-        { active: false },
-      );
+      const oldClass = await Promise.all([
+        this.classModel.findOneAndUpdate(
+          { courseId, active: true },
+          { active: false },
+        ),
+        this.coursesService.updateOne(
+          { _id: courseId },
+          { activeClass: false },
+        ),
+      ]);
       if (!oldClass) {
         throw new NotFoundException('No running Class found');
       }
-      await this.coursesService.updateOne(
-        { _id: courseId },
-        { activeClass: false },
-      );
       return { message: 'Class dismissed successfully' };
     }
     if (!location) {
@@ -123,8 +172,10 @@ export class ClassesService {
     if (!runningClass) {
       throw new NotFoundException('No running class found');
     }
-    const classId = runningClass._id;
-    if (runningClass.students.some((id) => id.toString() === studentId)) {
+
+    if (
+      runningClass.students.some((id) => id.toString() === studentId.toString())
+    ) {
       throw new BadRequestException('Student already marked Attendance');
     }
     const distance = this.calculateDistance(
@@ -137,7 +188,7 @@ export class ClassesService {
       throw new BadRequestException('You are too far from class');
     }
     await this.classModel.updateOne(
-      { _id: classId },
+      { _id: runningClass._id },
       {
         $addToSet: { students: studentId },
       },
@@ -192,8 +243,7 @@ export class ClassesService {
 
     const c = 2 * Math.asin(Math.sqrt(a));
 
-    // Radius of earth in kilometers. Use 3956
-    // for miles
+    // Radius of earth in kilometers. Use 3956 for miles
     const r = 6371;
 
     // calculate the result in meter

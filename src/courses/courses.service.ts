@@ -90,7 +90,7 @@ export class CoursesService {
     if (!course.isActive) {
       throw new BadRequestException('Course closed for enrollment');
     }
-    if (course.students.some((id) => id.toString() === studentId)) {
+    if (course.students.some((id) => id.toString() === studentId.toString())) {
       throw new ConflictException('Student already enrolled');
     }
     await course.updateOne({ $addToSet: { students: studentId } });

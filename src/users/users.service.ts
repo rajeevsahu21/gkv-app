@@ -76,11 +76,12 @@ export class UsersService {
       role?: string;
       status?: string;
       password?: string;
-      resetPasswordToken?: string | null;
-      resetPasswordExpires?: number | null;
+      resetPasswordToken?: string;
+      resetPasswordExpires?: number;
       lastActivityAt?: Date;
       parentEmail?: string;
       parentPhone?: string;
+      $unset?: object;
     },
   ) {
     return this.userModel.findOneAndUpdate(filter, update);

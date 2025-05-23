@@ -31,3 +31,12 @@ export class Class {
 }
 
 export const ClassSchema = SchemaFactory.createForClass(Class);
+
+ClassSchema.index(
+  { courseId: 1, active: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { active: true },
+    name: 'unique_active_class_per_course',
+  },
+);

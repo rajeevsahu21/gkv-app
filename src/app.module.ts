@@ -8,6 +8,8 @@ import { ExpressAdapter } from '@bull-board/express';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -47,6 +49,9 @@ import { NotificationModule } from './common/notification/notification.module';
       ],
     }),
     ScheduleModule.forRoot(),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
     AuthModule,
     UsersModule,
     CoursesModule,

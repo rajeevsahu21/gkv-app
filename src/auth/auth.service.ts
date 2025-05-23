@@ -274,8 +274,7 @@ export class AuthService {
       },
       {
         password: hashPassword,
-        resetPasswordToken: null,
-        resetPasswordExpires: null,
+        $unset: { resetPasswordToken: 1, resetPasswordExpires: 1 },
         status: 'active',
       },
     );
