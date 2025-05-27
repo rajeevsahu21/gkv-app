@@ -9,6 +9,8 @@ import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { CacheModule } from '@nestjs/cache-manager';
+import { createKeyv } from '@keyv/redis';
 import { join } from 'path';
 
 import { AppController } from './app.controller';
@@ -51,6 +53,15 @@ import { NotificationModule } from './common/notification/notification.module';
     ScheduleModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
+    }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: async () => {
+        return {
+          ttl: 600000,
+          stores: [createKeyv(process.env.REDIS_URL)],
+        };
+      },
     }),
     AuthModule,
     UsersModule,

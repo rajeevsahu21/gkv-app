@@ -1,7 +1,16 @@
-import { Controller, Get, Body, Put, Req, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Put,
+  Req,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common';
 import { join } from 'path';
 import { readFileSync } from 'fs';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -36,6 +45,7 @@ export class UsersController {
 
   @Roles(Role.Admin)
   @Get()
+  @UseInterceptors(CacheInterceptor)
   async findAll(
     @Query() query: { pageNumber: number; limit: number; searchTerm: string },
   ) {
@@ -65,6 +75,7 @@ export class UsersController {
 
   @Roles(Role.Admin)
   @Get('courses')
+  @UseInterceptors(CacheInterceptor)
   async getUserCourses(@Query() query: { userId: string; role: string }) {
     const { userId, role } = query;
     let filter: any = {
