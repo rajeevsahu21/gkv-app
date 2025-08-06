@@ -137,17 +137,19 @@ export class AuthService {
       throw new BadRequestException('Missing authentication credentials.');
     }
     const email = profile.email;
-    if (!/[a-zA-Z0-9+_.-]+@gkv.ac.in/.test(email)) {
-      throw new BadRequestException('Please use GKV E-mail');
-    }
-    const role = /^\d{8,9}@gkv\.ac\.in$/.test(email) ? 'student' : 'teacher';
-    const registrationNo = role === 'student' ? email.split('@')[0] : undefined;
+
     const name = profile.name;
     const gId = profile.sub || profile.id;
     const profileImage = profile.picture;
     let user = await this.usersService.findOne({ email });
 
     if (!user) {
+      if (!/[a-zA-Z0-9+_.-]+@gkv.ac.in/.test(email)) {
+        throw new BadRequestException('Please use GKV E-mail');
+      }
+      const role = /^\d{8,9}@gkv\.ac\.in$/.test(email) ? 'student' : 'teacher';
+      const registrationNo =
+        role === 'student' ? email.split('@')[0] : undefined;
       user = await this.usersService.create({
         name,
         email,

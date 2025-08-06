@@ -10,11 +10,11 @@ import {
 import { join } from 'path';
 import { readFileSync } from 'fs';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { CacheInterceptor } from '@nestjs/cache-manager';
+// import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { IRequest } from '../common/interfaces/request';
+import type { IRequest } from '../common/interfaces/request';
 import { CoursesService } from '../courses/courses.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from './user.model';
@@ -45,7 +45,7 @@ export class UsersController {
 
   @Roles(Role.Admin)
   @Get()
-  @UseInterceptors(CacheInterceptor)
+  // @UseInterceptors(CacheInterceptor)
   async findAll(
     @Query() query: { pageNumber: number; limit: number; searchTerm: string },
   ) {
@@ -75,7 +75,7 @@ export class UsersController {
 
   @Roles(Role.Admin)
   @Get('courses')
-  @UseInterceptors(CacheInterceptor)
+  // @UseInterceptors(CacheInterceptor)
   async getUserCourses(@Query() query: { userId: string; role: string }) {
     const { userId, role } = query;
     let filter: any = {

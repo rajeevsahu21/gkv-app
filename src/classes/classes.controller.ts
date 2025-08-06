@@ -19,7 +19,7 @@ import { IdDto } from '../common/dto/id.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/user.model';
 import { CourseDto } from '../courses/dto/course.dto';
-import { IRequest } from '../common/interfaces/request';
+import type { IRequest } from '../common/interfaces/request';
 import { MarkAttendanceDto } from './dto/markAttendance.dto';
 import { ClassDto } from './dto/class.dto';
 

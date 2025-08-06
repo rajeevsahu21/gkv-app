@@ -25,7 +25,7 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 import { IdDto } from '../common/dto/id.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/user.model';
-import { IRequest } from '../common/interfaces/request';
+import type { IRequest } from '../common/interfaces/request';
 import { EnrollDto } from './dto/enroll.dto';
 import { CourseDto } from './dto/course.dto';
 

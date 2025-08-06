@@ -4,7 +4,7 @@ import {
   Type,
   ValidationPipe,
 } from '@nestjs/common';
-import * as basicAuth from 'express-basic-auth';
+import basicAuth from 'express-basic-auth';
 import { NestContainer, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { DebuggedTree, SpelunkerModule } from 'nestjs-spelunker';
