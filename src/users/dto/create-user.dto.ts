@@ -8,10 +8,7 @@ import {
 } from 'class-validator';
 
 export class CreateUserDto {
-  @IsEmail(
-    { host_whitelist: ['gkv.ac.in'] },
-    { message: 'Please use GKV E-mail' },
-  )
+  @IsEmail()
   @Transform(({ value }: { value: string }) => value?.trim().toLowerCase())
   email: string;
 

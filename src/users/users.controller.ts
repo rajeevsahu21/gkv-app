@@ -6,6 +6,7 @@ import {
   Req,
   Query,
   UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { join } from 'path';
 import { readFileSync } from 'fs';
@@ -92,6 +93,12 @@ export class UsersController {
 
   @Put('')
   async update(@Body() updateUserDto: UpdateUserDto, @Req() req: IRequest) {
+    if (
+      updateUserDto.registrationNo &&
+      !req.user.email.includes(updateUserDto.registrationNo)
+    ) {
+      throw new BadRequestException('Email must conatins registration no');
+    }
     await this.usersService.updateOne({ _id: req.user._id }, updateUserDto);
     return { message: 'User Profile Updated successfully' };
   }

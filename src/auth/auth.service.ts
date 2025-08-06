@@ -78,9 +78,9 @@ export class AuthService {
     if (oldUser) {
       throw new ConflictException('User with given email already exist');
     }
-    const role = /^\d{8,9}@gkv\.ac\.in$/.test(registerDto.email)
-      ? 'student'
-      : 'teacher';
+    const role = /^[a-zA-Z]+@gkv\.ac\.in$/.test(registerDto.email)
+      ? 'teacher'
+      : 'student';
     const registrationNo =
       role === 'student' ? registerDto.email.split('@')[0] : undefined;
     const salt = genSaltSync(Number(process.env.SALT));
@@ -144,10 +144,9 @@ export class AuthService {
     let user = await this.usersService.findOne({ email });
 
     if (!user) {
-      if (!/[a-zA-Z0-9+_.-]+@gkv.ac.in/.test(email)) {
-        throw new BadRequestException('Please use GKV E-mail');
-      }
-      const role = /^\d{8,9}@gkv\.ac\.in$/.test(email) ? 'student' : 'teacher';
+      const role = /^[a-zA-Z]+@gkv\.ac\.in$/.test(email)
+        ? 'teacher'
+        : 'student';
       const registrationNo =
         role === 'student' ? email.split('@')[0] : undefined;
       user = await this.usersService.create({

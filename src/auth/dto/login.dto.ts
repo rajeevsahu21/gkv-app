@@ -3,7 +3,7 @@ import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class LoginDto {
   /**
-   * Gkv E-mail
+   * E-mail
    * @example 196301078@gkv.ac.in
    */
   @IsEmail()
